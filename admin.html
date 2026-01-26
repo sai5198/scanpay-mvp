@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScanPay Admin | Manage Shop</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-wrapper {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px 0;
+        }
+
+        /* Override glass-panel fixed width for this stacked layout */
+        .glass-panel {
+            width: 100%;
+            margin-bottom: 24px;
+            box-sizing: border-box;
+        }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid var(--glass-border);
+            color: var(--text-main);
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Ensure QR reader fits */
+        #reader {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            border: 1px solid var(--glass-border);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-wrapper animate-fade-in">
+        <div class="glass-panel">
+            <h2>Shop Setup</h2>
+            <div class="mb-4">
+                <input type="text" id="storeName" placeholder="Shop Name (e.g. Arjun's Mart)">
+            </div>
+            <div class="mb-4">
+                <input type="text" id="vpa" placeholder="UPI ID (e.g. shopname@okicici)">
+            </div>
+            <button onclick="saveStoreSettings()">Save Store Settings</button>
+        </div>
+
+        <div class="glass-panel">
+            <h2>Add New Product</h2>
+            <div id="reader"></div>
+            <div class="mb-4">
+                <input type="text" id="barcode" placeholder="Barcode Number">
+            </div>
+            <div class="mb-4">
+                <input type="text" id="pName" placeholder="Product Name (e.g. Maggi)">
+            </div>
+            <div class="mb-4">
+                <input type="number" id="pPrice" placeholder="Price (INR)">
+            </div>
+            <button onclick="addProduct()">Add to Inventory</button>
+        </div>
+
+        <div class="glass-panel">
+            <h2>Inventory List</h2>
+            <div id="productList" style="color: var(--text-muted);">Loading products...</div>
+        </div>
+
+        <div class="glass-panel" style="text-align: center;">
+            <h2>Entrance QR</h2>
+            <div id="entrance-qr" style="display: inline-block; padding: 10px; background: white; border-radius: 8px;">
+            </div>
+            <p id="qr-link-text"
+                style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; word-break: break-all;"></p>
+            <button onclick="downloadQR()" style="margin-top: 10px;">Download Sticker</button>
+        </div>
+    </div>
+
+    <script>
+        // TODO: REPLACE WITH YOUR FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Get Store ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const storeId = urlParams.get('store_id') || 'store_001';
+
+        // 1. Initialize Scanner
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+            (decodedText) => { document.getElementById('barcode').value = decodedText; }
+        );
+
+        // 2. Save Store Meta
+        function saveStoreSettings() {
+            const name = document.getElementById('storeName').value;
+            const vpa = document.getElementById('vpa').value;
+            db.collection("stores").doc(storeId).set({ name, vpa }, { merge: true })
+                .then(() => alert("Store Updated!"));
+        }
+
+        // 3. Add Product to Firestore
+        function addProduct() {
+            const barcode = document.getElementById('barcode').value;
+            const name = document.getElementById('pName').value;
+            const price = parseFloat(document.getElementById('pPrice').value);
+
+            if (!barcode || !name || !price) return alert("Fill all fields");
+
+            db.collection("Products").doc(storeId).collection("items").doc(barcode).set({
+                name, price, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert("Product Added!");
+                document.getElementById('pName').value = '';
+                document.getElementById('pPrice').value = '';
+                document.getElementById('barcode').value = '';
+            });
+        }
+
+        // 4. Live Inventory Listener
+        db.collection("Products").doc(storeId).collection("items")
+            .onSnapshot((snapshot) => {
+                const list = document.getElementById('productList');
+                list.innerHTML = "";
+                snapshot.forEach(doc => {
+                    const p = doc.data();
+                    list.innerHTML += `<div class="product-item">
+                        <span><b>${p.name}</b> (${doc.id})</span>
+                        <span>₹${p.price}</span>
+                    </div>`;
+                });
+            });
+
+        // 5. Generate Entrance QR
+        function generateEntranceQR(storeId) {
+            const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
+            const fullUrl = `${baseUrl}?store_id=${storeId}`;
+
+            // Clear previous QR
+            document.getElementById("entrance-qr").innerHTML = "";
+            document.getElementById("qr-link-text").innerText = fullUrl;
+
+            new QRCode(document.getElementById("entrance-qr"), {
+                text: fullUrl,
+                width: 180,
+                height: 180,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function downloadQR() {
+            const qrCanvas = document.querySelector("#entrance-qr canvas");
+            if (qrCanvas) {
+                const link = document.createElement('a');
+                link.download = `store_qr_${storeId}.png`;
+                link.href = qrCanvas.toDataURL();
+                link.click();
+            } else {
+                const qrImg = document.querySelector("#entrance-qr img");
+                if (qrImg) {
+                    const link = document.createElement('a');
+                    link.download = `store_qr_${storeId}.png`;
+                    link.href = qrImg.src;
+                    link.click();
+                }
+            }
+        }
+
+        // Initialize QR
+        generateEntranceQR(storeId);
+    </script>
+</body>
+
+</html>

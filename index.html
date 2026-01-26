@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ScanPay</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loader" class="glass-panel text-center animate-fade-in">
+        <div class="loader"></div>
+        <p>Loading Store...</p>
+    </div>
+
+    <!-- Welcome Section -->
+    <div id="welcome-section" class="glass-panel animate-fade-in hidden" style="text-align: center;">
+        <div style="margin-bottom: 20px;">
+            <!-- Placeholder Logo or Icon -->
+            <div style="font-size: 40px; margin-bottom: 10px;">🛍️</div>
+            <h1 id="storeName">Welcome</h1>
+            <span id="storeStatus" class="badge active">Active</span>
+        </div>
+
+        <p class="mb-4">Scan products, add to cart, and pay instantly.</p>
+
+        <button id="startBtn">📷 Start Shopping</button>
+    </div>
+
+    <!-- Scanner Section -->
+    <div id="scanner-section" class="glass-panel animate-fade-in hidden">
+        <div class="flex-between mb-4">
+            <h2>Scan Product</h2>
+            <button onclick="goToCart()" class="secondary" style="width: auto; padding: 8px 16px;">
+                🛒 <span id="cart-items-count">0</span>
+            </button>
+        </div>
+
+        <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 16px; display:none;">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="text" id="barcodeInput" placeholder="Enter barcode..." autofocus style="flex: 1;">
+            <button onclick="scanProduct()" style="width: auto; white-space: nowrap;">➕ Add</button>
+        </div>
+
+        <button onclick="toggleCamera()" class="secondary" style="width: 100%; margin-bottom: 10px;">📷 Scan with
+            Camera</button>
+
+        <!-- Recent Item Preview / Mini Cart -->
+        <div id="cart-preview" style="margin-top: 10px; color: var(--text-muted); font-size: 0.9rem;">
+            Scan an item to see it here.
+        </div>
+    </div>
+
+    <!-- Cart Section -->
+    <div id="cart-section" class="glass-panel animate-fade-in hidden">
+        <div class="flex-between mb-4">
+            <h2>Your Cart</h2>
+            <button onclick="backToScanner()"
+                style="background: #666; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; flex: 1;">
+                ← Back
+            </button>
+            <button onclick="initiatePayment('UPI')"
+                style="background: #00e676; color: black; padding: 12px; border: none; border-radius: 8px; cursor: pointer; flex: 2; font-weight: bold;">
+                Pay via UPI
+            </button>
+        </div>
+        <button onclick="initiatePayment('CASH')"
+            style="background: #333; border: 1px solid #00e676; color: #00e676; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%;">
+            💵 Pay with Cash
+        </button>
+    </div>
+    </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- QRCode Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- App Logic -->
+    <script defer src="script.js?v=3"></script>
+
+</body>
+
+</html>
