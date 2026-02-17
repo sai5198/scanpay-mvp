@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScanPay - One Place for Every Portal</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:wght@600&display=swap");
+
+        :root {
+            --bg: #0b0b0b;
+            --panel: #141414;
+            --panel-2: #101010;
+            --text: #f5f5f5;
+            --muted: #b5b5b5;
+            --accent: #00e676;
+            --accent-dark: #00c853;
+            --border: #222;
+            --radius: 18px;
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 15% 10%, #1c1c1c 0%, rgba(28, 28, 28, 0) 55%),
+                radial-gradient(circle at 85% 20%, rgba(0, 230, 118, 0.12) 0%, rgba(0, 230, 118, 0) 50%),
+                #0b0b0b;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 28px 18px 72px;
+        }
+
+        header {
+            padding: 18px 0 24px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(0, 230, 118, 0.12);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-family: "Fraunces", "Times New Roman", serif;
+            font-size: 2.4rem;
+            margin: 0 0 10px 0;
+        }
+
+        h2 {
+            margin: 0 0 12px 0;
+            font-size: 1.5rem;
+        }
+
+        p { color: var(--muted); margin: 0 0 12px 0; }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            margin: 16px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .hero {
+            display: grid;
+            gap: 16px;
+        }
+
+        .cta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            text-decoration: none;
+            font-weight: 600;
+            color: #000;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .portal-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .portal-card {
+            padding: 16px;
+            border-radius: 14px;
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            display: grid;
+            gap: 8px;
+        }
+
+        .portal-title {
+            font-weight: 600;
+        }
+
+        .portal-link {
+            word-break: break-all;
+            color: var(--accent);
+            font-size: 0.95rem;
+            text-decoration: none;
+        }
+
+        .portal-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .portal-actions .btn {
+            padding: 10px 14px;
+        }
+
+        .portal-actions .btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(0.6);
+        }
+
+        .input-row {
+            display: grid;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #0f0f0f;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .hint {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .flow {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .step {
+            padding: 12px;
+            background: #111;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        footer {
+            margin-top: 24px;
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        @media (min-width: 800px) {
+            h1 { font-size: 2.9rem; }
+            .hero { grid-template-columns: 1.2fr 0.8fr; align-items: center; }
+            .portal-grid { grid-template-columns: 1fr 1fr 1fr; }
+            .flow { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <div>
+                <span class="badge">ScanPay</span>
+                <h1>Skip the billing queue. Scan and pay.</h1>
+                <p>A simple self-checkout system for local stores. This page is the single entry point to every ScanPay portal.</p>
+                <div class="cta">
+                    <a class="btn" href="#portals">Open your portal</a>
+                    <a class="btn secondary" href="#demo">Request a demo</a>
+                </div>
+            </div>
+            <div class="panel">
+                <h2>For store teams</h2>
+                <p>Customer, Merchant, and Admin links are separated to avoid confusion. Use the Store ID to generate the right link.</p>
+                <div class="flow">
+                    <div class="step">1. Enter Store ID</div>
+                    <div class="step">2. Choose your portal</div>
+                    <div class="step">3. Use QR for customers</div>
+                    <div class="step">4. Verify and close orders</div>
+                </div>
+            </div>
+        </header>
+
+        <section class="panel" id="portals">
+            <h2>Portal switcher</h2>
+            <p>Enter your Store ID to generate the correct links for each role.</p>
+            <div class="input-row">
+                <input type="text" id="storeIdInput" placeholder="Enter Store ID (e.g. test_store)" />
+                <div class="hint" id="storeHint">Links are disabled until a Store ID is provided.</div>
+            </div>
+
+            <div class="portal-grid">
+                <div class="portal-card">
+                    <div class="portal-title">Customer App</div>
+                    <div class="hint">Self-checkout for shoppers</div>
+                    <a id="customerLinkText" class="portal-link" href="#">Enter Store ID</a>
+                    <div class="portal-actions">
+                        <a id="customerLink" class="btn disabled" href="#">Open Customer</a>
+                    </div>
+                </div>
+
+                <div class="portal-card">
+                    <div class="portal-title">Merchant App</div>
+                    <div class="hint">Order verification for staff</div>
+                    <a id="merchantLinkText" class="portal-link" href="#">Enter Store ID</a>
+                    <div class="portal-actions">
+                        <a id="merchantLink" class="btn disabled" href="#">Open Merchant</a>
+                    </div>
+                </div>
+
+                <div class="portal-card">
+                    <div class="portal-title">Admin Dashboard</div>
+                    <div class="hint">Catalog, pricing, and setup</div>
+                    <a id="adminLinkText" class="portal-link" href="#">Enter Store ID</a>
+                    <div class="portal-actions">
+                        <a id="adminLink" class="btn disabled" href="#">Open Admin</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" id="how">
+            <h2>How ScanPay works</h2>
+            <div class="flow">
+                <div class="step">Customer scans store QR and adds items</div>
+                <div class="step">Customer pays by UPI or cash</div>
+                <div class="step">Merchant verifies and confirms</div>
+                <div class="step">Admin manages products and prices</div>
+            </div>
+        </section>
+
+        <section class="panel" id="demo">
+            <h2>Live demo</h2>
+            <p>Want to see it in your store? We will set it up using your own products.</p>
+            <div class="cta">
+                <a class="btn" href="tel:+917032598231">Call: 7032598231</a>
+                <a class="btn secondary" href="https://wa.me/917032598231" target="_blank" rel="noopener">WhatsApp</a>
+            </div>
+        </section>
+
+        <footer>
+            ScanPay - simple self-checkout for local stores.
+        </footer>
+    </div>
+
+    <script>
+        const storeIdInput = document.getElementById("storeIdInput");
+        const storeHint = document.getElementById("storeHint");
+
+        const links = {
+            customer: {
+                link: document.getElementById("customerLink"),
+                text: document.getElementById("customerLinkText")
+            },
+            merchant: {
+                link: document.getElementById("merchantLink"),
+                text: document.getElementById("merchantLinkText")
+            },
+            admin: {
+                link: document.getElementById("adminLink"),
+                text: document.getElementById("adminLinkText")
+            }
+        };
+
+        function buildLinks(storeId) {
+            const base = window.location.origin;
+            if (!storeId) {
+                storeHint.textContent = "Links are disabled until a Store ID is provided.";
+                Object.values(links).forEach((entry) => {
+                    entry.link.href = "#";
+                    entry.link.classList.add("disabled");
+                    entry.text.textContent = "Enter Store ID";
+                });
+                return;
+            }
+
+            const safeId = encodeURIComponent(storeId);
+            const customerUrl = `${base}/?store_id=${safeId}`;
+            const merchantUrl = `${base}/merchant-Toothless.html?store_id=${safeId}`;
+            const adminUrl = `${base}/admin-Toothless.html?store_id=${safeId}`;
+
+            storeHint.textContent = `Using Store ID: ${storeId}`;
+
+            links.customer.link.href = customerUrl;
+            links.customer.text.textContent = customerUrl;
+            links.customer.link.classList.remove("disabled");
+
+            links.merchant.link.href = merchantUrl;
+            links.merchant.text.textContent = merchantUrl;
+            links.merchant.link.classList.remove("disabled");
+
+            links.admin.link.href = adminUrl;
+            links.admin.text.textContent = adminUrl;
+            links.admin.link.classList.remove("disabled");
+        }
+
+        storeIdInput.addEventListener("input", () => {
+            buildLinks(storeIdInput.value.trim());
+        });
+
+        buildLinks("");
+    </script>
+</body>
+</html>

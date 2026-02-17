@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScanPay Admin | Manage Shop</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="style-Toothless.css">
+    <style>
+        .admin-wrapper {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px 0;
+        }
+
+        /* Override glass-panel fixed width for this stacked layout */
+        .glass-panel {
+            width: 100%;
+            margin-bottom: 24px;
+            box-sizing: border-box;
+        }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid var(--glass-border);
+            color: var(--text-main);
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .link-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .link-item {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .link-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .link-actions button {
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        /* Ensure QR reader fits */
+        #reader {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            border: 1px solid var(--glass-border);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="log"></div>
+
+    <div class="admin-wrapper animate-fade-in">
+        <div class="glass-panel">
+            <h2 id="store-name-header">Store Dashboard</h2>
+            <span id="store-status-badge" class="status-badge">UNKNOWN</span>
+            <div class="mb-4">
+                <input type="text" id="storeId" placeholder="Store ID">
+            </div>
+            <div class="mb-4">
+                <input type="text" id="settingsName" placeholder="Store Name">
+            </div>
+            <div class="mb-4">
+                <input type="text" id="settingsUpi" placeholder="UPI ID">
+            </div>
+            <button onclick="saveStoreSettings()">Save Store Settings</button>
+            <div class="mb-4">
+                <div class="link-row">
+                    <div class="link-item">
+                        <div>Customer App</div>
+                        <a id="customerLink" href="#" target="_blank" rel="noopener">Loading...</a>
+                        <div class="link-actions">
+                            <button onclick="copyLink('customerLink')">Copy</button>
+                            <button onclick="openLink('customerLink')">Open</button>
+                        </div>
+                    </div>
+                    <div class="link-item">
+                        <div>Merchant App</div>
+                        <a id="merchantLink" href="#" target="_blank" rel="noopener">Loading...</a>
+                        <div class="link-actions">
+                            <button onclick="copyLink('merchantLink')">Copy</button>
+                            <button onclick="openLink('merchantLink')">Open</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel">
+            <h2>Add New Product</h2>
+            <div id="reader"></div>
+            <div class="mb-4">
+                <input type="text" id="newBarcode" placeholder="Barcode Number">
+            </div>
+            <div class="mb-4">
+                <input type="text" id="newName" placeholder="Product Name (e.g. Maggi)">
+            </div>
+            <div class="mb-4">
+                <input type="number" id="newPrice" placeholder="Price (INR)">
+            </div>
+            <button onclick="addProduct()">Add to Inventory</button>
+        </div>
+
+        <div class="glass-panel">
+            <h2>Inventory List</h2>
+            <div class="stats" style="display: flex; justify-content: space-around; margin-bottom: 10px;">
+                <div>Total: <span id="stat-total">0</span></div>
+                <div>Active: <span id="stat-active">0</span></div>
+                <div>Disabled: <span id="stat-disabled">0</span></div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th>Barcode</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="product-list-body">
+                    <tr><td colspan="5" style="text-align:center; color:#666;">Loading products...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="glass-panel">
+            <h2>Bulk Upload</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">JSON array: <code>[{"barcode":"...","name":"...","price":99}, ...]</code></p>
+            <textarea id="bulkProductsInput" placeholder='[{"barcode":"8901234567890","name":"Maggi","price":12}]' rows="4" style="margin-bottom: 10px;"></textarea>
+            <button onclick="bulkUploadProducts()">Upload Products</button>
+        </div>
+
+        <div class="glass-panel">
+            <h2>Recent Orders</h2>
+            <div id="adminOrdersList" style="color: var(--text-muted);">Loading...</div>
+        </div>
+
+        <div class="glass-panel" style="text-align: center;">
+            <h2>Store QR</h2>
+            <div id="store-qr-code" style="display: inline-block; padding: 10px; background: white; border-radius: 8px;">
+            </div>
+        </div>
+    </div>
+
+    <script src="admin-Toothless.js"></script>
+</body>
+
+</html>
